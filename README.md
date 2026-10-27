@@ -229,8 +229,10 @@ python3 convert_panda_urdf.py -m panda_1
 this will generated a **panda_calibrated.urdf** in the panda_1 folder. Copy this file in the controller repo ( in the urdf directory) and follow the instructions on how to start the controller using the calibrated external model. 
 
 # Print the tool
-We used a BambuLab A1. We printed with classic PLA, with the finest available settings, i.e. 0.08 mm. The printer is very precise, when measuring the distance between the socket using a caliper, it will have an error of less than 0.1 mm. This is very desirable considering that we are using that to calibrate. The tool has two pairs of notches to fit calibers. Usually calipers have an angles of 45 deg or 30 deg, check on which side it fits the best. Use a caliper with a resolution of at least 0.01 mm. If you see that the distance is between 40.90 and 50.10 mm, it means that the print is perfectly calibrated. Otherwsie, you can specify the distance you read in the optimization in meters. E.g.
-python3 run_optimizer.py --model <nomial_urdf_name> --data <path/to/data/folder> --distance 0.0501
+We used a BambuLab A1. We printed with classic PLA, with the finest available settings, i.e. 0.08 mm. The printer is very precise, when measuring the distance between the socket using a caliper, it will have an error of less than 0.1 mm. This is very desirable considering that we are using that to calibrate. The tool has two pairs of notches to fit calibers. Usually calipers have an angles of 45 deg or 30 deg, check on which side it fits the best. Use a caliper with a resolution of at least 0.01 mm. If you see that the distance is between 49.90 and 50.10 mm, it means that the print is perfectly calibrated. Otherwsie, you can specify the distance you read in the optimization in meters. E.g.
+```bash
+python3 run_optimizer.py --model <nomial_urdf_name> --data <path/to/data/folder> --offset-distance 0.0501
+```
 We always found the printed tool to be at (almost) perfect distance of 50 mm!
 ![Alt Text](imgs/caliper.jpeg)
 
@@ -255,14 +257,16 @@ This is an example we have in the lab in TU Delft with the bota sensor.
 ```bash
 ros2 run calibration_tools record_joint_states_dataset --joint-state-topic-name /joint_states --robot-name panda_with_sensor --tool-position-on-table front --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
 ```
-This will save the data in the direction `data` with the name `panda_with_sensor\front`. Nice. 
+This will save the data in the direction `data` with the name `panda_with_sensor/front`. Nice. 
 
 - Let's optimize the urdf now: 
 ```
-python3 generate_complete_analysis.py --model panda_plus_bota --data panda_1_with_sensor/front
+python3 generate_complete_analysis.py --model panda_plus_bota --data panda_with_sensor/front
 ```
 This will generate an optimized file in `calibrated_urdf` in the subfolder `panda_with_sensor` named `panda_plus_bota.urdf`. So now you can take your old broken urdf and swap it with the new one.  
 # Calibrate a bimanual setup (Experimental ⚠️)
+> **Note:** `scripts/bimanual_calibration.py` was removed upstream in commit `e393c09`; restore its last version with `git show e393c09^:scripts/bimanual_calibration.py > scripts/bimanual_calibration.py` if needed. The recording commands below use the ROS 1 Franka recorder in `ros_ws`.
+
 Plase the tool in front of the two robots. We are going to use the tool now to identify the chosen global frame. Place the tool in the y direction with the hole 1 in the direction of the positive y. Place it also on a flat table that is perpendicular to the gravity vector. I measure left and right from the perspecttive of the user looking at the robots. 
 
 You calibrate each of the robot saparetly before. This last stage is not to calibrated the kinematics but only the relative position of the base. 
