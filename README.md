@@ -2,12 +2,12 @@
 
 Have you ever wondered why the accuracy of your robot is poor, and why the
 end-effector is at different poses when you move in the null-space? Well, 
-the platonics did! And we are you to help you out. This problem is especally 
+the platonics did! And we are here to help you out. This problem is especially 
 relevant when working with cartesian control where an accurate forward kinematics is desirable. 
 
 The method implemented in this repository was mainly developed for the Franka
 Emika Panda robot, where inaccurate kinematics have been raised a few times but was tested on many other commercial robots. This is the first tool that does not require any external systems like optitrack, camera sensors or laser trackers. You will only need one simple tool to place in front of the robot. 
-The tool is 3D printable and it is composed of two spherical sockets placed at a distance of 50 mm. A 3D printable spherical joint is then attached to the end effector and used to record many position of the robt in each of the sockets, identified as 0 and 1. 
+The tool is 3D printable and it is composed of two spherical sockets placed at a distance of 50 mm. A 3D printable spherical joint is then attached to the end effector and used to record many positions of the robot in each of the sockets, identified as 0 and 1. 
 ![alt text](imgs/mukca.png)
 The first step is the data recording and then the optimization is performed to optimize the robot urdf file. 
 
@@ -211,7 +211,7 @@ If the optimization was successful the overlay will look like this:
 
 ![Alt Text](imgs/overlay.PNG)
 
-You can notice that the forward kinematics is very consistent by the diplayed red dot of the learned shpere attached at the end effector. 
+You can notice that the forward kinematics is very consistent by the displayed red dot of the learned sphere attached at the end effector. 
 
 The overlay of the nominal uncalibrated model, will look more like this:
 
@@ -219,24 +219,24 @@ The overlay of the nominal uncalibrated model, will look more like this:
 
 In this case, you can see that the forward kinematics is not consistent, as indicated by the scattered red dots of the learned sphere attached at the end effector.
 
-### Use the panda urdf for a calibrated Cartesina impedance controller. 
+### Use the panda urdf for a calibrated Cartesian impedance controller. 
 
 You can use the [Franka human friendly controllers](https://github.com/franzesegiovanni/franka_human_friendly_controllers) and place the calibrated model in the urdf folder. To be sure to generate a compatible urdf model that will have the right paths specified, please run: 
 
 ```bash
 python3 convert_panda_urdf.py -m panda_1
 ```
-this will generated a **panda_calibrated.urdf** in the panda_1 folder. Copy this file in the controller repo ( in the urdf directory) and follow the instructions on how to start the controller using the calibrated external model. 
+this will generate a **panda_calibrated.urdf** in the panda_1 folder. Copy this file in the controller repo ( in the urdf directory) and follow the instructions on how to start the controller using the calibrated external model. 
 
 # Print the tool
-We used a BambuLab A1. We printed with classic PLA, with the finest available settings, i.e. 0.08 mm. The printer is very precise, when measuring the distance between the socket using a caliper, it will have an error of less than 0.1 mm. This is very desirable considering that we are using that to calibrate. The tool has two pairs of notches to fit calibers. Usually calipers have an angles of 45 deg or 30 deg, check on which side it fits the best. Use a caliper with a resolution of at least 0.01 mm. If you see that the distance is between 49.90 and 50.10 mm, it means that the print is perfectly calibrated. Otherwsie, you can specify the distance you read in the optimization in meters. E.g.
+We used a BambuLab A1. We printed with classic PLA, with the finest available settings, i.e. 0.08 mm. The printer is very precise, when measuring the distance between the socket using a caliper, it will have an error of less than 0.1 mm. This is very desirable considering that we are using that to calibrate. The tool has two pairs of notches to fit calipers. Usually calipers have an angle of 45 deg or 30 deg, check on which side it fits the best. Use a caliper with a resolution of at least 0.01 mm. If you see that the distance is between 49.90 and 50.10 mm, it means that the print is perfectly calibrated. Otherwise, you can specify the distance you read in the optimization in meters. E.g.
 ```bash
-python3 run_optimizer.py --model <nomial_urdf_name> --data <path/to/data/folder> --offset-distance 0.0501
+python3 run_optimizer.py --model <nominal_urdf_name> --data <path/to/data/folder> --offset-distance 0.0501
 ```
 We always found the printed tool to be at (almost) perfect distance of 50 mm!
 ![Alt Text](imgs/caliper.jpeg)
 
-You can can remix the tools, I shared them in an [Onshape](https://cad.onshape.com/documents/0b6b115d8701048ec8c03433/w/dadf4b03313f5058948ebaa5/e/40893559aa99a64107618f54?renderMode=0&uiState=67e2e1d063975d2a0e09916f). 
+You can remix the tools, I shared them in an [Onshape](https://cad.onshape.com/documents/0b6b115d8701048ec8c03433/w/dadf4b03313f5058948ebaa5/e/40893559aa99a64107618f54?renderMode=0&uiState=67e2e1d063975d2a0e09916f). 
 # Try it with your robot and your own urdf! 
 There are situations where for example you want to change the end effector position in the URDF or where you want to put a sensor between the last joint and the hand. 
 This is an example we have in the lab in TU Delft with the bota sensor. 
@@ -253,11 +253,11 @@ This is an example we have in the lab in TU Delft with the bota sensor.
   - panda_joint7
   - bota_sensor_joint
   - ball_joint
-- Record the data. As far as you have a joint_states topic, you can run the command describe at the beginning of this instructions. For example: 
+- Record the data. As far as you have a joint_states topic, you can run the command described at the beginning of these instructions. For example: 
 ```bash
 ros2 run calibration_tools record_joint_states_dataset --joint-state-topic-name /joint_states --robot-name panda_with_sensor --tool-position-on-table front --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
 ```
-This will save the data in the direction `data` with the name `panda_with_sensor/front`. Nice. 
+This will save the data in the directory `data` with the name `panda_with_sensor/front`. Nice. 
 
 - Let's optimize the urdf now: 
 ```
@@ -267,9 +267,9 @@ This will generate an optimized file in `calibrated_urdf` in the subfolder `pand
 # Calibrate a bimanual setup (Experimental ⚠️)
 > **Note:** `scripts/bimanual_calibration.py` was removed upstream in commit `e393c09`; restore its last version with `git show e393c09^:scripts/bimanual_calibration.py > scripts/bimanual_calibration.py` if needed. The recording commands below use the ROS 1 Franka recorder in `ros_ws`.
 
-Plase the tool in front of the two robots. We are going to use the tool now to identify the chosen global frame. Place the tool in the y direction with the hole 1 in the direction of the positive y. Place it also on a flat table that is perpendicular to the gravity vector. I measure left and right from the perspecttive of the user looking at the robots. 
+Place the tool in front of the two robots. We are going to use the tool now to identify the chosen global frame. Place the tool in the y direction with the hole 1 in the direction of the positive y. Place it also on a flat table that is perpendicular to the gravity vector. I measure left and right from the perspective of the user looking at the robots. 
 
-You calibrate each of the robot saparetly before. This last stage is not to calibrated the kinematics but only the relative position of the base. 
+You calibrate each of the robots separately before. This last stage is not to calibrate the kinematics but only the relative position of the base. 
 You will have to record another dataset for each robot for each socket. 
 For example: 
 ```bash
@@ -280,7 +280,7 @@ and for the robot on the right
 ```bash
 rosrun calibration_tools record_joint_states_panda --joint-state-topic-name /joint_states --robot-name panda_right --config-file panda_right.yaml --tool-position-on-table world_frame 
 ```
-Perfect, now we compute the realtive position of the arms in the world frames that we just placed in the currenct location of the MUCKa tool: 
+Perfect, now we compute the relative position of the arms in the world frames that we just placed in the current location of the MUKCa tool: 
 
 ```
 python3 bimanual_calibration.py --robot_left panda_2  --robot_right panda_3 --data_left panda_left/world_frame  --data_right panda_right/world_frame
@@ -288,11 +288,11 @@ python3 bimanual_calibration.py --robot_left panda_2  --robot_right panda_3 --da
 
 This script will save a file called relative_position.yaml folder of the workspace. 
 ⚠️ Warning!
-The bimanual calibration is only experimental and only had limited tested on a limited case. Moreover, currently the authors believe that the bimanual calibration made in this way is a ill posed problem. This is not part of the official MUKCa calibration proceedure. 
+The bimanual calibration is only experimental and was only tested on a limited case. Moreover, currently the authors believe that the bimanual calibration made in this way is an ill-posed problem. This is not part of the official MUKCa calibration procedure. 
 # Limitations 
 The proposed method does not work for all the robots! Here is an example of performing the training on the kinova gen3lite robot. They do not have harmonic drives in each joint, hence they have more backlash. This is a problem, since we have uncertainty in the joint angles. Let's look at the bar plot before and after the training on different tool position. 
 ![alt text](imgs/bar_plot_statistics_kinova.png)
-We can observe that training on the front brings the error down also on the left and on a position on the right (and higher) position of the tool. However, if we train only on the left, we observe overfitting, making the accuracy on the other position to decrease with respect to the orginal nominal model. For the kinova it is actually convenient to train on all the tool position. This brings the error down everywhere removoing the influence of the noisy joint reading. 
+We can observe that training on the front brings the error down also on the left and on a position on the right (and higher) position of the tool. However, if we train only on the left, we observe overfitting, making the accuracy on the other position to decrease with respect to the original nominal model. For the kinova it is actually convenient to train on all the tool position. This brings the error down everywhere removing the influence of the noisy joint reading. 
 
 # Cite this work.
 This new method is under review for publication.
