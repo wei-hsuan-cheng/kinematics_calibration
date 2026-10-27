@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 package_name = 'calibration_tools'
 
@@ -13,11 +13,15 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='franzesegiovanni',
+    maintainer='gfranzese',
     maintainer_email='franzesegiovanni@outlook.com',
-    description='Calibration tools for kinematic calibration',
+    description='Joint state recorder for the MUKCa kinematic calibration',
     license='MIT',
-    tests_require=['pytest'],
+    extras_require={
+        'test': [
+            'pytest',
+        ],
+    },
     entry_points={
         'console_scripts': [
             'record_joint_states_dataset = calibration_tools.record_joint_states_dataset:main',

@@ -33,37 +33,64 @@ Or install the package through poetry, using
 poetry install
 ```
 
-## Record the data
-To record the data, we rely on the ros topic that has the joint angles of the encoders. Place this repository in a catkin workspace and build it. 
-
+On a ROS 2 machine, install it in a virtual environment so that pip does not upgrade the numpy used by ROS:
 ```bash
-cd ros_ws
-catkin build
-source devel/setup.{bash,zsh}
+python3 -m virtualenv ~/.venvs/mukca   # or: uv venv -p 3.10 ~/.venvs/mukca
+source ~/.venvs/mukca/bin/activate
+pip3 install -e .
 ```
-This will install the ros workspace to record data. It is only running one script to 
+
+The calibration itself does not need ROS. You can try it on the recorded datasets in the `data` folder:
+```bash
+cd scripts
+python3 run_optimizer.py --model panda --data panda_1/front_center
+python3 compute_improved_performance.py --model panda_1
+```
+
+## Record the data (ROS 2 Humble)
+To record the data, we rely on the ros topic that has the joint angles of the encoders. The recorder is the ROS 2 package [ros2/calibration_tools](ros2/calibration_tools). It is only running one script to
 save joint states and writing a csv file. There is hardly any dependencies on this.
-The calibration routine is very simple. The tool has two sockets identified as 0 and 1. There is a sphere attached at the end effecotor. The idea is to record main joint configuration of the ball in the socket 0 and many other in the socket 1. At least 20 for each socket. To do this we run the node in calibration_tools named record_joint_states_dataset. 
-
-
-
-Here is an example for calibrating the kuka for example: 
+Symlink this repository into the `src` folder of a colcon workspace and build it:
 
 ```bash
-rosrun calibration_tools record_joint_states_dataset --joint-state-topic-name /joint_states --robot-name kuka_1  --tool-position-on-table front --robot-dof 7 
+cd <workspace_dir>
+ln -s <path/to/kinematics_calibration> src/
+NUM_JOBS=2 && \
+export CMAKE_BUILD_PARALLEL_LEVEL=${NUM_JOBS} && \
+export MAKEFLAGS=-j${NUM_JOBS} && \
+export NINJAFLAGS=-j${NUM_JOBS} && \
+colcon build --symlink-install \
+  --packages-up-to calibration_tools \
+  --executor sequential --parallel-workers ${NUM_JOBS} \
+  --cmake-force-configure \
+  --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && \
+  . install/setup.bash
 ```
-For the robot name we advice to use the name of the robot and a number considering that you want to calibrate more than one robot with the same name. The position of the tool is to distinguish the different datasets if more one for different calibration tool are recorded.  
-The ros topic /joint_states must be of type [sensor_msgs/JointState](https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/JointState.html). 
+The ROS 1 workspace `ros_ws` is kept for reference and ignored by colcon.
 
-What to do when the code runs: 
+The calibration routine is very simple. The tool has two sockets identified as 0 and 1. There is a sphere attached at the end effecotor. The idea is to record main joint configuration of the ball in the socket 0 and many other in the socket 1. At least 20 for each socket. To do this we run the node in calibration_tools named record_joint_states_dataset.
 
-- Press 'a' to add a new joint configuration that has the sphere in the socket that the displayed in the algorithm.  
+Here is an example for calibrating the kuka for example:
+
+```bash
+ros2 run calibration_tools record_joint_states_dataset --joint-state-topic-name /joint_states --robot-name kuka_1 --tool-position-on-table front \
+  --joint-names iiwa_joint_1 iiwa_joint_2 iiwa_joint_3 iiwa_joint_4 iiwa_joint_5 iiwa_joint_6 iiwa_joint_7
+```
+For the robot name we advice to use the name of the robot and a number considering that you want to calibrate more than one robot with the same name. The position of the tool is to distinguish the different datasets if more one for different calibration tool are recorded.
+The ros topic /joint_states must be of type [sensor_msgs/JointState](https://docs.ros.org/en/humble/p/sensor_msgs/interfaces/msg/JointState.html). If `--joint-names` is omitted, all joints of the first message are recorded.
+The data is saved in `data/<robot-name>/<tool-position-on-table>` of this repository (built with `--symlink-install`), or in `--data-dir` / `$MUKCA_DATA_DIR` if given. See [ros2/calibration_tools/README.md](ros2/calibration_tools/README.md) for all options.
+
+What to do when the code runs (the keys are read from the terminal running the node):
+
+- Press 'a' to add a new joint configuration that has the sphere in the socket that the displayed in the algorithm.
 - Presss 'd' to delete the last joint configuration from the list
 - Press 's' when you switch the hole in which you are recording
-- Press 'q' when you have finished recording. 
+- Press 'q' when you have finished recording.
 
 
-### Record data with a Franka 
+### Record data with a Franka (ROS 1 only)
+The Franka recorder below, that uses the Desk buttons, is not ported to ROS 2 yet. With ROS 2 you can use `record_joint_states_dataset` with the `/joint_states` of your Franka controller.
+
 ![Alt Text](imgs/mukca_franka.gif)
 
 As controllers, we suggest to use the [Human Friendly Controllers](https://github.com/franzesegiovanni/franka_human_friendly_controllers.git). You can also lunch any controller of [franka_ros](https://github.com/frankaemika/franka_ros.git). It is important to check that the joint state can be echoed. 
@@ -199,7 +226,7 @@ This is an example we have in the lab in TU Delft with the bota sensor.
   - ball_joint
 - Record the data. As far as you have a joint_states topic, you can run the command describe at the beginning of this instructions. For example: 
 ```bash
-rosrun calibration_tools record_joint_states_dataset --joint-state-topic-name joint_states --robot-name panda_with_sensor --tool-position-on-table front --robot-dof 7
+ros2 run calibration_tools record_joint_states_dataset --joint-state-topic-name /joint_states --robot-name panda_with_sensor --tool-position-on-table front --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
 ```
 This will save the data in the direction `data` with the name `panda_with_sensor\front`. Nice. 
 
