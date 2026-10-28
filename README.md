@@ -135,7 +135,7 @@ See [ros2/calibration_tools/README.md](ros2/calibration_tools/README.md) for all
 
 With ROS 2, run `record_joint_states_dataset` on the `/joint_states` of your Franka controller, with the `panda_joint1` ... `panda_joint7` joint names. It is important to check that the joint state can be echoed.
 
-The ROS 1 recorder `record_joint_states_panda` in `ros_ws`, that uses the buttons on the end effector to add data or switch between holes, together with the [Human Friendly Controllers](https://github.com/franzesegiovanni/franka_human_friendly_controllers.git), is not ported to ROS 2.
+The ROS 1 recorder `record_joint_states_panda` (in `ros_ws` on the `main` branch), that uses the buttons on the end effector to add data or switch between holes, together with the [Human Friendly Controllers](https://github.com/franzesegiovanni/franka_human_friendly_controllers.git), is not ported to ROS 2.
 
 
 ## Calibrate the urdf model
@@ -275,7 +275,7 @@ This will generate an optimized file in `calibrated_urdf` in the subfolder `pand
 
 
 <!-- # Calibrate a bimanual setup (Experimental ⚠️)
-> **Note:** `scripts/bimanual_calibration.py` was removed upstream in commit `e393c09`; restore its last version with `git show e393c09^:scripts/bimanual_calibration.py > scripts/bimanual_calibration.py` if needed. The recording commands below use the ROS 1 Franka recorder in `ros_ws`.
+> **Note:** `scripts/bimanual_calibration.py` was removed upstream in commit `e393c09`; restore its last version with `git show e393c09^:scripts/bimanual_calibration.py > scripts/bimanual_calibration.py` if needed. The recording commands below use the ROS 1 Franka recorder in `ros_ws` on the `main` branch.
 
 Place the tool in front of the two robots. We are going to use the tool now to identify the chosen global frame. Place the tool in the y direction with the hole 1 in the direction of the positive y. Place it also on a flat table that is perpendicular to the gravity vector. I measure left and right from the perspective of the user looking at the robots. 
 
