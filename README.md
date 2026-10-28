@@ -30,11 +30,7 @@ The calibration has two independent steps that share only the recorded csv files
 
 
 ### Recorder (ROS 2 Humble)
-Symlink this repository into the `src` folder of a colcon workspace and build it. colcon finds the package in `ros2/calibration_tools`; the ROS 1 workspace `ros_ws` is kept for reference and ignored by colcon.
-
 ```bash
-mkdir -p <workspace_dir>/src && cd <workspace_dir>/src
-ln -s <path/to/kinematics_calibration> .
 cd <workspace_dir>
 NUM_JOBS=2 && \
 export CMAKE_BUILD_PARALLEL_LEVEL=${NUM_JOBS} && \
