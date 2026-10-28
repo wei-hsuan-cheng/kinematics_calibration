@@ -205,7 +205,7 @@ On the training set but also on the test set, i.e. the tool positions that were 
 ### Visualize the overlay of the robot prediction
 You can generate also an overlay of the robot in the different configurations that were recorded. For example 
 ```bash
-python3 generate_overlay.py  --model panda_1 --data panda_1/front 
+python3 generate_overlay.py  --model panda_1 --data panda_1/front_left
 ```
 This will prompt a window with a visualization of the robot. Move the view such that you can nicely see the end-effector. Press q in the visualization window to save the camera setting with the point of view.
 If you run the overlay again, you can also avoid to generate all the images of the poses. Just pass the flag --no-generate-images .
