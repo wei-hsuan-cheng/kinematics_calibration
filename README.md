@@ -3,12 +3,26 @@
 Have you ever wondered why the accuracy of your robot is poor, and why the end-effector is at different poses when you move in the null-space? Well, the platonics did! And we are here to help you out. This problem is especially relevant when working with cartesian control where an accurate forward kinematics is desirable.
 
 The method implemented in this repository was mainly developed for the Franka Emika Panda robot, where inaccurate kinematics have been raised a few times but was tested on many other commercial robots. This is the first tool that does not require any external systems like optitrack, camera sensors or laser trackers. You will only need one simple tool to place in front of the robot. The tool is 3D printable and it is composed of two spherical sockets placed at a distance of 50 mm. A 3D printable spherical joint is then attached to the end effector and used to record many positions of the robot in each of the sockets, identified as 0 and 1.
-![alt text](imgs/mukca.png)
+
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="imgs/mukca.png" width="450" alt="MUKCa calibration tool" />
+    </td>
+    <td align="center" width="50%">
+      <img src="imgs/Calibration_scheme.png" width="300" alt="MUKCa calibration scheme" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>MUKCa tool</b><br />Sockets 0 and 1, 50 mm apart, and the sphere attached to the end effector</td>
+    <td align="center"><b>Calibration scheme</b><br />Consistency in each socket and distortion of the distance between them</td>
+  </tr>
+</table>
+
 The first step is the data recording and then the optimization is performed to optimize the robot urdf file. 
 
 
-## What do we propose in this new approach? 
-<!-- ![Alt Text](imgs/Calibration_scheme.png) -->
+## What do we propose in this new approach?
 
 The method contribution is the Minimalist and User-friendly Kinematics Calibration (MUKCa) available in the [`stl/MUKCa_tool.stl`](stl/MUKCa_tool.stl) folder, as the combination of an affordable calibration tool, illustrated in figure and an optimization algorithm for kinematic parameter identification. The proposed minimalist tool is designed for accessibility and affordability, and it is 3D printable and composed of a sphere (or ball) with a two-socket base, as illustrated, without relying on external measurement systems or camera. After printing them, the calibration can immediately start with the data recording on the robot by simply placing the tool in front of the robot and the sphere attached to the end-effector.
 
@@ -35,6 +49,7 @@ colcon build --symlink-install \
   . install/setup.bash
 ```
 
+
 ### Calibration (Python, no ROS)
 Install the python package `calibrate_fk` in a virtual environment, so that pip does not replace the numpy, scipy and matplotlib used by ROS:
 ```bash
@@ -55,7 +70,16 @@ The calibration has two independent steps that share only the recorded csv files
 
 ## Record the data
 
-![Alt Text](imgs/mukca_franka.gif)
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="imgs/mukca_franka.gif" width="500" alt="Recording data with a Franka" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Franka Panda</b><br />Recording joint configurations with the sphere in the sockets</td>
+  </tr>
+</table>
 
 The tool has two sockets identified as 0 and 1. There is a sphere attached at the end effector. The idea is to record many joint configurations with the ball in socket 0 and many others with the ball in socket 1, at least 20 for each socket.
 
@@ -126,7 +150,18 @@ Training on one position is sufficient, but training on multiple tool positions 
 python3 run_optimizer.py --model panda --data panda_1/front panda_1/left panda_1/right panda_1/high
 ```
 The optimization will now try to maximize the consistency in any of the sockets of each tool position and minimize the bias in the predicted distance between the two sockets.
-![alt text](imgs/bar_plot_panda_2.jpg)
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="imgs/bar_plot_panda_2.jpg" width="800" alt="Mean absolute error for different training and test positions of the Panda" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Franka Panda</b><br />Mean absolute error when training on one, several or all tool positions (hatched: training)</td>
+  </tr>
+</table>
+
 In this plot we trained and evaluated on different positions of the tool or in all of them. You can see that even when training only on the front, the final accuracy on the right-high position is still good. By training on all the positions, the error goes down everywhere.
 
 
@@ -136,10 +171,21 @@ python3 generate_learning_curve.py --model panda_1
 ```
 This plots the consistency and the distortion of the model both on the training set and on any other dataset in the folder `data/panda_1`, and saves them in `calibrated_urdf/panda_1`.
 For example:
-<p float="left">
-  <img src="imgs/consistency.png" alt="Consistency" width="300" />
-  <img src="imgs/distortion.png" alt="Distortion" width="300" />
-</p>
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="imgs/consistency.png" width="400" alt="Consistency learning curve" />
+    </td>
+    <td align="center" width="50%">
+      <img src="imgs/distortion.png" width="400" alt="Distortion learning curve" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Consistency</b><br />Variance of the predicted sphere position in each socket</td>
+    <td align="center"><b>Distortion</b><br />Error of the predicted distance between the two sockets</td>
+  </tr>
+</table>
+
 The left curve is the consistency, i.e. the variance of the different forward kinematics positions for each of the two holes. The optimization is trying to make the robot as consistent and as little distorted as possible, that is why you see the curve go down.
 The right figure shows the distortion of the robot, i.e. the error in the distance between the two sets of points for socket 0 and socket 1. We expect the distance to be 0.05 m, so we can compute the error of our measurement.
 
@@ -159,25 +205,29 @@ On the training set but also on the test set, i.e. the tool positions that were 
 
 
 ### Visualize the overlay of the robot prediction
-You can generate also an overlay of the robot in the different configurations that were recorded. For example 
+You can also generate an overlay of the robot in the different configurations that were recorded, for the calibrated model and, to compare, for the nominal uncalibrated model `urdf/<urdf>.urdf`:
 ```bash
-python3 generate_overlay.py  --model panda_1 --data panda_1/front_left
+python3 generate_overlay.py --model panda_1 --data panda_1/front_left            # calibrated
+python3 generate_overlay.py --model panda_1 --data panda_1/front_left --nominal  # nominal
 ```
-This will prompt a window with a visualization of the robot. Move the view such that you can nicely see the end-effector. Press `q` in the visualization window to save the camera setting with the point of view.
-If you run the overlay again, you can also avoid to generate all the images of the poses. Just pass the flag `--no-generate-images`.
+The overlays are saved as `calibrated_urdf/<robot-name>/overlay_<tool-position-on-table>.png` and `overlay_nominal_<tool-position-on-table>.png`. By default the camera looks from behind the two sockets towards the robot and is zoomed such that all the configurations fit. To choose the view yourself, pass `--view window`, move the view in the window and press `q`; the view is saved and can be reused without the window with `--view file`. If you run the overlay again, pass `--no-generate-images` to reuse the images of the poses.
 
-If the optimization was successful the overlay will look like this: 
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="imgs/overlay.PNG" width="400" alt="Overlay of the calibrated model" />
+    </td>
+    <td align="center" width="50%">
+      <img src="imgs/overlaynominal.png" width="400" alt="Overlay of the nominal model" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Calibrated model</b><br />Consistent sphere position in each socket</td>
+    <td align="center"><b>Nominal model</b><br />Scattered sphere positions</td>
+  </tr>
+</table>
 
-
-![Alt Text](imgs/overlay.PNG)
-
-You can notice that the forward kinematics is very consistent by the displayed red dot of the learned sphere attached at the end effector. 
-
-The overlay of the nominal uncalibrated model, will look more like this:
-
-![Alt Text](imgs/overlaynominal.png)
-
-In this case, you can see that the forward kinematics is not consistent, as indicated by the scattered red dots of the learned sphere attached at the end effector.
+If the optimization was successful, the forward kinematics of the calibrated model (left) is very consistent, as shown by the single red dot of the learned sphere attached at the end effector in each socket. For the nominal model (right), the forward kinematics is not consistent, as indicated by the scattered red dots.
 
 
 # Print the tool
@@ -186,7 +236,17 @@ We used a BambuLab A1. We printed with classic PLA, with the finest available se
 python3 run_optimizer.py --model <nominal_urdf_name> --data <path/to/data/folder> --offset-distance 0.0501
 ```
 We always found the printed tool to be at (almost) perfect distance of 50 mm!
-![Alt Text](imgs/caliper.jpeg)
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="imgs/caliper.jpeg" width="400" alt="Measuring the socket distance with a caliper" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Printed tool</b><br />Measuring the distance between the sockets with a caliper</td>
+  </tr>
+</table>
 
 You can remix the tools, I shared them in an [Onshape](https://cad.onshape.com/documents/0b6b115d8701048ec8c03433/w/dadf4b03313f5058948ebaa5/e/40893559aa99a64107618f54?renderMode=0&uiState=67e2e1d063975d2a0e09916f).
 
@@ -194,7 +254,18 @@ You can remix the tools, I shared them in an [Onshape](https://cad.onshape.com/d
 # Try it with your robot and your own urdf! 
 There are situations where for example you want to change the end effector position in the URDF or where you want to put a sensor between the last joint and the hand. 
 This is an example we have in the lab in TU Delft with the bota sensor. 
-![Alt Text](imgs/franka_with_bota_sensor.png)
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="imgs/franka_with_bota_sensor.png" width="500" alt="Franka with a Bota force-torque sensor" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Franka with Bota sensor</b><br />Sensor mounted between the last joint and the hand</td>
+  </tr>
+</table>
+
 - I created a new urdf file in the homonym folder with the sensor located in between the two joints. I called the file `panda_plus_bota.urdf`
 - I also added the mesh in the homonym folder so I can visualize it 
 - I create a file `panda_plus_bota.yaml` in `config_optimizer` where I specify all the joints that are going to be optimized. Each joint has `xyz` `rpy` variables optimized as transformation from the previous joint. For example I choose to optimize all the first 7 joints, the ball transformation and also the transformation of the sensor since I do not know the perfect dimension of the sensor. 
@@ -222,7 +293,18 @@ This will generate an optimized file in `calibrated_urdf` in the subfolder `pand
 
 # Limitations 
 The proposed method does not work for all the robots! Here is an example of performing the training on the kinova gen3lite robot. They do not have harmonic drives in each joint, hence they have more backlash. This is a problem, since we have uncertainty in the joint angles. Let's look at the bar plot before and after the training on different tool position. 
-![alt text](imgs/bar_plot_statistics_kinova.png)
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="imgs/bar_plot_statistics_kinova.png" width="800" alt="Mean absolute error for different training and test positions of the Kinova Gen3 Lite" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Kinova Gen3 Lite</b><br />Mean absolute error before and after training on different tool positions</td>
+  </tr>
+</table>
+
 We can observe that training on the front brings the error down also on the left and on a position on the right (and higher) position of the tool. However, if we train only on the left, we observe overfitting, making the accuracy on the other position to decrease with respect to the original nominal model. For the kinova it is actually convenient to train on all the tool position. This brings the error down everywhere removing the influence of the noisy joint reading. 
 
 
