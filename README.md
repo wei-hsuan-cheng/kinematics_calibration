@@ -17,15 +17,6 @@ The two sockets are printed at a known distance, and the ball is printed to have
 We propose a novel optimization routine. After collecting set of joint configurations for each socket, the calibration routine minimizes the variance of the predicted ball position for each of the two sockets, maximizing the model nullspace consistency.  Moreover, the model is optimized such that the distance among the average prediction matches the known distance between the two sockets, minimizing the model volumetric distortion. This consistency-and-distortion optimization is the first of its kind in the field of kinematic calibration. 
 
 
-## Overview
-The calibration has two independent steps that share only the recorded csv files:
-
-| Step | What | Environment |
-|---|---|---|
-| 1. Record | ROS 2 package [ros2/calibration_tools](ros2/calibration_tools) saves the joint configurations with the ball in socket 0 and socket 1 to `data/<robot-name>/<tool-position-on-table>/hole_{0,1}.csv` | ROS 2 Humble |
-| 2. Calibrate | Python package `calibrate_fk` and the `scripts` folder optimize the URDF on the recorded data and write it to `calibrated_urdf/<robot-name>/` | Python virtual environment, no ROS |
-
-
 ## Installation
 
 
@@ -44,15 +35,6 @@ colcon build --symlink-install \
   . install/setup.bash
 ```
 
-Check the build and run the unit tests:
-```bash
-ros2 pkg executables calibration_tools   # -> calibration_tools record_joint_states_dataset
-colcon test --packages-select calibration_tools && colcon test-result --verbose
-```
-
-With `--symlink-install`, changes to the Python files take effect without rebuilding. In a new terminal, only `. <workspace_dir>/install/setup.bash` is needed.
-
-
 ### Calibration (Python, no ROS)
 Install the python package `calibrate_fk` in a virtual environment, so that pip does not replace the numpy, scipy and matplotlib used by ROS:
 ```bash
@@ -62,34 +44,13 @@ python3 -m virtualenv ~/.venvs/mukca   # or: python3 -m venv ~/.venvs/mukca, or:
 Or install it through poetry with `poetry install`. All dependencies are available for x86_64 and aarch64 (e.g. Jetson with JetPack 6), Python 3.10. Create the environment on each machine, do not copy it.
 
 
-### Docker
-If the repository is mounted into a container that runs with a different uid than the owner of the files, the container cannot write recordings to `data` or results to `calibrated_urdf`. Give the container user write access on the host:
-```bash
-cd <path/to/kinematics_calibration>
-setfacl -R -m u:<container uid>:rwX,d:u:<container uid>:rwX,d:u:<host uid>:rwX data calibrated_urdf
-```
-Use `id -u` in the container and on the host to get the uids. Undo it with `setfacl -R -b data calibrated_urdf`.
+## Overview
+The calibration has two independent steps that share only the recorded csv files:
 
-
-## Quick start without a robot
-The calibration runs on the datasets in the `data` folder:
-```bash
-source ~/.venvs/mukca/bin/activate
-cd <path/to/kinematics_calibration>/scripts
-export MPLBACKEND=Agg   # save the plots to files instead of opening windows
-python3 run_optimizer.py --model panda --data panda_1/front_center
-python3 generate_learning_curve.py --model panda_1
-python3 compute_improved_performance.py --model panda_1
-```
-This removes about 97 % of the consistency error on the training data and about 95 % on the 7 tool positions of `panda_1` that were not used for training. See [Calibrate the urdf model](#calibrate-the-urdf-model) for what each script does.
-
-To try the recorder without a robot, publish a fake joint state in one terminal:
-```bash
-ros2 topic pub -r 20 /joint_states sensor_msgs/msg/JointState \
-  "{name: [panda_joint1, panda_joint2, panda_joint3, panda_joint4, panda_joint5, panda_joint6, panda_joint7],
-    position: [0.0, -0.5, 0.0, -2.0, 0.0, 1.6, 0.8]}"
-```
-and run the recorder as described below with `--robot-name panda_test` in a second terminal. Delete `data/panda_test` afterwards.
+| Step | What | Environment |
+|---|---|---|
+| 1. Record | ROS 2 package [ros2/calibration_tools](ros2/calibration_tools) saves the joint configurations with the ball in socket 0 and socket 1 to `data/<robot-name>/<tool-position-on-table>/hole_{0,1}.csv` | ROS 2 Humble |
+| 2. Calibrate | Python package `calibrate_fk` and the `scripts` folder optimize the URDF on the recorded data and write it to `calibrated_urdf/<robot-name>/` | Python virtual environment, no ROS |
 
 
 ## Record the data
@@ -99,13 +60,13 @@ The tool has two sockets identified as 0 and 1. There is a sphere attached at th
    ```bash
    ros2 topic echo /joint_states --once
    ```
-2. Run the recorder, e.g. for a KUKA iiwa14:
+2. Run the recorder, e.g. for a Franka Panda:
    ```bash
    ros2 run calibration_tools record_joint_states_dataset \
      --joint-state-topic-name /joint_states \
-     --robot-name kuka_1 \
+     --robot-name panda_1 \
      --tool-position-on-table front \
-     --joint-names iiwa_joint_1 iiwa_joint_2 iiwa_joint_3 iiwa_joint_4 iiwa_joint_5 iiwa_joint_6 iiwa_joint_7
+     --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
    ```
 3. Type the keys in the terminal running the recorder (no Enter needed):
    - Press 'a' to add a new joint configuration with the sphere in the socket that is displayed in green.
@@ -319,3 +280,14 @@ If you calibrated your URDF and used it in your research, and found it helpful, 
 # Give feedback!
 
 Any feedback on the usability, the method, and the results is appreciated and welcome! Let's make collaborative robots accurate together.
+
+
+# Troubleshooting
+
+### Docker: no write access to `data` or `calibrated_urdf`
+If the repository is mounted into a container that runs with a different uid than the owner of the files, the container cannot write recordings to `data` or results to `calibrated_urdf`. Give the container user write access on the host:
+```bash
+cd <path/to/kinematics_calibration>
+setfacl -R -m u:<container uid>:rwX,d:u:<container uid>:rwX,d:u:<host uid>:rwX data calibrated_urdf
+```
+Use `id -u` in the container and on the host to get the uids. Undo it with `setfacl -R -b data calibrated_urdf`.
