@@ -105,8 +105,6 @@ def overlay_images(images: list , output_path: str):
     result_image = Image.fromarray(average_image, mode="RGBA")
 
     result_image.save(output_path)
-    # show the image
-    result_image.show()
 
 def overlay_images_2(images: list, output_path: str):
     from rembg import remove
