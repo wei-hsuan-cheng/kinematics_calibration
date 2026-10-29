@@ -224,6 +224,34 @@ The CAD file of the calibration tool available in the [`stl/MUKCa_tool.stl`](stl
 
 
 ## Try it with your robot and your own urdf! 
+
+### Add the sphere to the urdf
+Add a link at the center of the sphere, fixed to the link that holds it (e.g. the flange). As in [`urdf/panda.urdf`](urdf/panda.urdf):
+```xml
+<link name="ball_link">
+  <visual>
+    <material name="red"><color rgba="1 0 0 1"/></material>
+    <geometry><sphere radius="0.005"/></geometry>
+  </visual>
+</link>
+
+<joint name="ball_joint" type="fixed">
+  <origin rpy="0 0 0" xyz="0 0 0.04"/>
+  <parent link="panda_hand_tcp"/>
+  <child link="ball_link"/>
+</joint>
+```
+- Name the link `ball_link`; the scripts look for this name.
+- Add `ball_joint` to `config_optimizer/<model>.yaml`, so its offset is calibrated too.
+
+### Tool dimensions
+| Dimension | Where | Notes |
+|---|---|---|
+| Socket distance | `--offset-distance` of `run_optimizer.py` (m, default `0.05`) | Only needed if the caliper does not read 50 mm. |
+| Flange to sphere center | `origin` of `ball_joint` in the urdf | Initial guess only, a few cm off is fine. It is calibrated. |
+| Sphere radius | Not used | Only the sphere center matters. The `radius` only sets the size of the red dot in the overlay. |
+
+### Example: Franka with a Bota sensor
 There are situations where for example you want to change the end effector position in the URDF or where you want to put a sensor between the last joint and the hand. 
 This is an example we have in the lab in TU Delft with the bota sensor. 
 
