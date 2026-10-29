@@ -10,7 +10,7 @@ The first step is the data recording and then the optimization is performed to o
 ## What do we propose in this new approach? 
 <!-- ![Alt Text](imgs/Calibration_scheme.png) -->
 
-The method contribution is the Minimalist and User-friendly Kinematics Calibration (MUKCa) available in the [stl/MUKCa_tool.stl](stl/MUKCa_tool.stl) folder, as the combination of an affordable calibration tool, illustrated in figure and an optimization algorithm for kinematic parameter identification. The proposed minimalist tool is designed for accessibility and affordability, and it is 3D printable and composed of a sphere (or ball) with a two-socket base, as illustrated, without relying on external measurement systems or camera. After printing them, the calibration can immediately start with the data recording on the robot by simply placing the tool in front of the robot and the sphere attached to the end-effector.
+The method contribution is the Minimalist and User-friendly Kinematics Calibration (MUKCa) available in the [`stl/MUKCa_tool.stl`](stl/MUKCa_tool.stl) folder, as the combination of an affordable calibration tool, illustrated in figure and an optimization algorithm for kinematic parameter identification. The proposed minimalist tool is designed for accessibility and affordability, and it is 3D printable and composed of a sphere (or ball) with a two-socket base, as illustrated, without relying on external measurement systems or camera. After printing them, the calibration can immediately start with the data recording on the robot by simply placing the tool in front of the robot and the sphere attached to the end-effector.
 
 The two sockets are printed at a known distance, and the ball is printed to have the minimal possible play in the sockets. 
 
@@ -49,14 +49,17 @@ The calibration has two independent steps that share only the recorded csv files
 
 | Step | What | Environment |
 |---|---|---|
-| 1. Record | ROS 2 package [ros2/calibration_tools](ros2/calibration_tools) saves the joint configurations with the ball in socket 0 and socket 1 to `data/<robot-name>/<tool-position-on-table>/hole_{0,1}.csv` | ROS 2 Humble |
+| 1. Record | ROS 2 package [`ros2/calibration_tools`](ros2/calibration_tools) saves the joint configurations with the ball in socket 0 and socket 1 to `data/<robot-name>/<tool-position-on-table>/hole_{0,1}.csv` | ROS 2 Humble |
 | 2. Calibrate | Python package `calibrate_fk` and the `scripts` folder optimize the URDF on the recorded data and write it to `calibrated_urdf/<robot-name>/` | Python virtual environment, no ROS |
 
 
 ## Record the data
+
+![Alt Text](imgs/mukca_franka.gif)
+
 The tool has two sockets identified as 0 and 1. There is a sphere attached at the end effector. The idea is to record many joint configurations with the ball in socket 0 and many others with the ball in socket 1, at least 20 for each socket.
 
-1. Start the driver or controller of your robot, and check that it publishes a [sensor_msgs/msg/JointState](https://docs.ros.org/en/humble/p/sensor_msgs/interfaces/msg/JointState.html) topic:
+1. Start the driver or controller of your robot, and check that it publishes a `sensor_msgs/msg/JointState` topic:
    ```bash
    ros2 topic echo /joint_states --once
    ```
@@ -69,11 +72,11 @@ The tool has two sockets identified as 0 and 1. There is a sphere attached at th
      --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
    ```
 3. Type the keys in the terminal running the recorder (no Enter needed):
-   - Press 'a' to add a new joint configuration with the sphere in the socket that is displayed in green.
-   - Press 'd' to delete the last joint configuration from the list.
-   - Press 's' when you switch the socket in which you are recording.
-   - Press 'i' to show the help.
-   - Press 'q' when you have finished recording, to save the data and quit.
+   - Press `a` to add a new joint configuration with the sphere in the socket that is displayed in green.
+   - Press `d` to delete the last joint configuration from the list.
+   - Press `s` when you switch the socket in which you are recording.
+   - Press `i` to show the help.
+   - Press `q` when you have finished recording, to save the data and quit.
 4. Optionally, place the tool in other parts of the workspace and record again with the same `--robot-name` and a different `--tool-position-on-table`, e.g. `left`, `right`, `high`.
 
 The data is saved in `data/<robot-name>/<tool-position-on-table>/hole_0.csv` and `hole_1.csv`, with the joint names as a `#` header. If the folder already contains recordings, the new data points are appended.
@@ -88,19 +91,11 @@ The data is saved in `data/<robot-name>/<tool-position-on-table>/hole_0.csv` and
 | KUKA iiwa14 | `iiwa14` | `iiwa_joint_1` ... `iiwa_joint_7` |
 | Kinova Gen3 Lite | `gen3lite` | `joint_1` ... `joint_6` |
 
-See [ros2/calibration_tools/README.md](ros2/calibration_tools/README.md) for all options, e.g. `--data-dir` to save the data somewhere else.
-
-
-### Record data with a Franka
-![Alt Text](imgs/mukca_franka.gif)
-
-With ROS 2, run `record_joint_states_dataset` on the `/joint_states` of your Franka controller, with the `panda_joint1` ... `panda_joint7` joint names. It is important to check that the joint state can be echoed.
-
-The ROS 1 recorder `record_joint_states_panda` (in `ros_ws` on the `main` branch), that uses the buttons on the end effector to add data or switch between holes, together with the [Human Friendly Controllers](https://github.com/franzesegiovanni/franka_human_friendly_controllers.git), is not ported to ROS 2.
+See [`ros2/calibration_tools/README.md`](ros2/calibration_tools/README.md) for all options, e.g. `--data-dir` to save the data somewhere else.
 
 
 ## Calibrate the urdf model
-Activate the virtual environment and go to the **scripts folder**:
+Activate the virtual environment and go to the `scripts` folder:
 ```bash
 source ~/.venvs/mukca/bin/activate
 cd <path/to/kinematics_calibration>/scripts
@@ -111,7 +106,7 @@ Three scripts are run in sequence. Only the first one changes the model; the oth
 
 | # | Script | What it does | Output |
 |---|---|---|---|
-| 1 | `run_optimizer.py` | Optimizes the xyz rpy of the joints listed in `config_optimizer/<model>.yaml`, such that the predicted ball position is consistent in each socket and the two sockets are 50 mm apart | `calibrated_urdf/<robot-name>/<model>.urdf`, `config.yaml` and the model after each optimization step `step_*/model.urdf` |
+| 1 | `run_optimizer.py` | Optimizes the `xyz` `rpy` of the joints listed in `config_optimizer/<model>.yaml`, such that the predicted ball position is consistent in each socket and the two sockets are 50 mm apart | `calibrated_urdf/<robot-name>/<model>.urdf`, `config.yaml` and the model after each optimization step `step_*/model.urdf` |
 | 2 | `generate_learning_curve.py` | Evaluates every optimization step on the training data and on all the other datasets in `data/<robot-name>` | `consistency.png`, `distortion.png` |
 | 3 | `compute_improved_performance.py` | Compares the nominal and the calibrated model on the training data and on the other datasets, and prints the parameter changes | Terminal output |
 
@@ -120,13 +115,13 @@ Three scripts are run in sequence. Only the first one changes the model; the oth
 ```bash
 python3 run_optimizer.py --model <nominal_urdf_name> --data <robot-name>/<tool-position-on-table>
 ```
-The nominal model needs to be in the **urdf** folder, e.g. `panda` for `urdf/panda.urdf`. The data are the ones saved in the previous step, e.g. `panda_1/front`. The script prints the error before and after the optimization, and writes a new urdf with the same name as the original one to the **calibrated_urdf** folder, in the subfolder of the robot name. So `calibrated_urdf/panda_1/panda.urdf` contains the calibrated parameters. Running the script again overwrites this folder.
+The nominal model needs to be in the `urdf` folder, e.g. `panda` for `urdf/panda.urdf`. The data are the ones saved in the previous step, e.g. `panda_1/front`. The script prints the error before and after the optimization, and writes a new urdf with the same name as the original one to the `calibrated_urdf` folder, in the subfolder of the robot name. So `calibrated_urdf/panda_1/panda.urdf` contains the calibrated parameters. Running the script again overwrites this folder.
 ```bash
 python3 run_optimizer.py --model panda --data panda_1/front
 ```
 If the printed tool is not exactly 50 mm, pass the distance measured with a caliper in meters with `--offset-distance`, see [Print the tool](#print-the-tool).
 
-Training on one position is sufficient, but training on multiple tool positions that are placed in different parts of the workspace is as easy as specifying their paths in the --data input. All the paths must belong to the same robot:
+Training on one position is sufficient, but training on multiple tool positions that are placed in different parts of the workspace is as easy as specifying their paths in the `--data` input. All the paths must belong to the same robot:
 ```bash
 python3 run_optimizer.py --model panda --data panda_1/front panda_1/left panda_1/right panda_1/high
 ```
@@ -168,8 +163,8 @@ You can generate also an overlay of the robot in the different configurations th
 ```bash
 python3 generate_overlay.py  --model panda_1 --data panda_1/front_left
 ```
-This will prompt a window with a visualization of the robot. Move the view such that you can nicely see the end-effector. Press q in the visualization window to save the camera setting with the point of view.
-If you run the overlay again, you can also avoid to generate all the images of the poses. Just pass the flag --no-generate-images .
+This will prompt a window with a visualization of the robot. Move the view such that you can nicely see the end-effector. Press `q` in the visualization window to save the camera setting with the point of view.
+If you run the overlay again, you can also avoid to generate all the images of the poses. Just pass the flag `--no-generate-images`.
 
 If the optimization was successful the overlay will look like this: 
 
@@ -183,16 +178,6 @@ The overlay of the nominal uncalibrated model, will look more like this:
 ![Alt Text](imgs/overlaynominal.png)
 
 In this case, you can see that the forward kinematics is not consistent, as indicated by the scattered red dots of the learned sphere attached at the end effector.
-
-
-### Use the panda urdf for a calibrated Cartesian impedance controller. 
-
-You can use the [Franka human friendly controllers](https://github.com/franzesegiovanni/franka_human_friendly_controllers) and place the calibrated model in the urdf folder. To be sure to generate a compatible urdf model that will have the right paths specified, please run: 
-
-```bash
-python3 convert_panda_urdf.py -m panda_1
-```
-this will generate a **panda_calibrated.urdf** in the panda_1 folder. Copy this file in the controller repo ( in the urdf directory) and follow the instructions on how to start the controller using the calibrated external model. 
 
 
 # Print the tool
@@ -210,19 +195,19 @@ You can remix the tools, I shared them in an [Onshape](https://cad.onshape.com/d
 There are situations where for example you want to change the end effector position in the URDF or where you want to put a sensor between the last joint and the hand. 
 This is an example we have in the lab in TU Delft with the bota sensor. 
 ![Alt Text](imgs/franka_with_bota_sensor.png)
-- I created a new urdf file in the homonym folder with the sensor located in between the two joints. I called the file panda_plus_bota.urdf
+- I created a new urdf file in the homonym folder with the sensor located in between the two joints. I called the file `panda_plus_bota.urdf`
 - I also added the mesh in the homonym folder so I can visualize it 
-- I create a file panda_plus_bota.yaml in config_optimizer where I specify all the joints that are going to be optimized. Each joint has xyz rpy variable optimized as transformation from the previous joint. For example I choose to optimize all the first 7 joints, the ball transformation and also the transformation of the sensor since I do not know the perfect dimension of the sensor. 
-  - panda_joint1
-  - panda_joint2
-  - panda_joint3
-  - panda_joint4
-  - panda_joint5
-  - panda_joint6
-  - panda_joint7
-  - bota_sensor_joint
-  - ball_joint
-- Record the data. As far as you have a joint_states topic, you can run the command described at the beginning of these instructions. For example: 
+- I create a file `panda_plus_bota.yaml` in `config_optimizer` where I specify all the joints that are going to be optimized. Each joint has `xyz` `rpy` variables optimized as transformation from the previous joint. For example I choose to optimize all the first 7 joints, the ball transformation and also the transformation of the sensor since I do not know the perfect dimension of the sensor. 
+  - `panda_joint1`
+  - `panda_joint2`
+  - `panda_joint3`
+  - `panda_joint4`
+  - `panda_joint5`
+  - `panda_joint6`
+  - `panda_joint7`
+  - `bota_sensor_joint`
+  - `ball_joint`
+- Record the data. As far as you have a `joint_states` topic, you can run the command described at the beginning of these instructions. For example: 
 ```bash
 ros2 run calibration_tools record_joint_states_dataset --joint-state-topic-name /joint_states --robot-name panda_with_sensor --tool-position-on-table front --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
 ```
@@ -233,33 +218,6 @@ This will save the data in the directory `data` with the name `panda_with_sensor
 python3 generate_complete_analysis.py --model panda_plus_bota --data panda_with_sensor/front
 ```
 This will generate an optimized file in `calibrated_urdf` in the subfolder `panda_with_sensor` named `panda_plus_bota.urdf`. So now you can take your old broken urdf and swap it with the new one.
-
-
-<!-- # Calibrate a bimanual setup (Experimental ⚠️)
-> **Note:** `scripts/bimanual_calibration.py` was removed upstream in commit `e393c09`; restore its last version with `git show e393c09^:scripts/bimanual_calibration.py > scripts/bimanual_calibration.py` if needed. The recording commands below use the ROS 1 Franka recorder in `ros_ws` on the `main` branch.
-
-Place the tool in front of the two robots. We are going to use the tool now to identify the chosen global frame. Place the tool in the y direction with the hole 1 in the direction of the positive y. Place it also on a flat table that is perpendicular to the gravity vector. I measure left and right from the perspective of the user looking at the robots. 
-
-You calibrate each of the robots separately before. This last stage is not to calibrate the kinematics but only the relative position of the base. 
-You will have to record another dataset for each robot for each socket. 
-For example: 
-```bash
-rosrun calibration_tools record_joint_states_panda --joint-state-topic-name /joint_states --robot-name panda_left --config-file panda_left.yaml --tool-position-on-table world_frame 
-```
-and for the robot on the right
-
-```bash
-rosrun calibration_tools record_joint_states_panda --joint-state-topic-name /joint_states --robot-name panda_right --config-file panda_right.yaml --tool-position-on-table world_frame 
-```
-Perfect, now we compute the relative position of the arms in the world frames that we just placed in the current location of the MUKCa tool: 
-
-```
-python3 bimanual_calibration.py --robot_left panda_2  --robot_right panda_3 --data_left panda_left/world_frame  --data_right panda_right/world_frame
-```
-
-This script will save a file called relative_position.yaml folder of the workspace. 
-⚠️ Warning!
-The bimanual calibration is only experimental and was only tested on a limited case. Moreover, currently the authors believe that the bimanual calibration made in this way is an ill-posed problem. This is not part of the official MUKCa calibration procedure.  -->
 
 
 # Limitations 
