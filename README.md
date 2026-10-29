@@ -70,16 +70,11 @@ The calibration has two independent steps that share only the recorded csv files
 
 ## Record the data
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="imgs/mukca_franka.gif" width="500" alt="Recording data with a Franka" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><b>Franka Panda</b><br />Recording joint configurations with the sphere in the sockets</td>
-  </tr>
-</table>
+<p align="center">
+  <img src="imgs/mukca_franka.gif" width="500" alt="Recording data with a Franka" />
+  <br />
+  <b>Franka Panda</b><br />Recording joint configurations with the sphere in the sockets
+</p>
 
 The tool has two sockets identified as 0 and 1. There is a sphere attached at the end effector. The idea is to record many joint configurations with the ball in socket 0 and many others with the ball in socket 1, at least 20 for each socket.
 
@@ -151,16 +146,11 @@ python3 run_optimizer.py --model panda --data panda_1/front panda_1/left panda_1
 ```
 The optimization will now try to maximize the consistency in any of the sockets of each tool position and minimize the bias in the predicted distance between the two sockets.
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="imgs/bar_plot_panda_2.jpg" width="800" alt="Mean absolute error for different training and test positions of the Panda" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><b>Franka Panda</b><br />Mean absolute error when training on one, several or all tool positions (hatched: training)</td>
-  </tr>
-</table>
+<p align="center">
+  <img src="imgs/bar_plot_panda_2.jpg" width="800" alt="Mean absolute error for different training and test positions of the Panda" />
+  <br />
+  <b>Franka Panda</b><br />Mean absolute error when training on one, several or all tool positions (hatched: training)
+</p>
 
 In this plot we trained and evaluated on different positions of the tool or in all of them. You can see that even when training only on the front, the final accuracy on the right-high position is still good. By training on all the positions, the error goes down everywhere.
 
@@ -237,16 +227,11 @@ python3 run_optimizer.py --model <nominal_urdf_name> --data <path/to/data/folder
 ```
 We always found the printed tool to be at (almost) perfect distance of 50 mm!
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="imgs/caliper.jpeg" width="400" alt="Measuring the socket distance with a caliper" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><b>Printed tool</b><br />Measuring the distance between the sockets with a caliper</td>
-  </tr>
-</table>
+<p align="center">
+  <img src="imgs/caliper.jpeg" width="400" alt="Measuring the socket distance with a caliper" />
+  <br />
+  <b>Printed tool</b><br />Measuring the distance between the sockets with a caliper
+</p>
 
 You can remix the tools, I shared them in an [Onshape](https://cad.onshape.com/documents/0b6b115d8701048ec8c03433/w/dadf4b03313f5058948ebaa5/e/40893559aa99a64107618f54?renderMode=0&uiState=67e2e1d063975d2a0e09916f).
 
@@ -255,16 +240,11 @@ You can remix the tools, I shared them in an [Onshape](https://cad.onshape.com/d
 There are situations where for example you want to change the end effector position in the URDF or where you want to put a sensor between the last joint and the hand. 
 This is an example we have in the lab in TU Delft with the bota sensor. 
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="imgs/franka_with_bota_sensor.png" width="500" alt="Franka with a Bota force-torque sensor" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><b>Franka with Bota sensor</b><br />Sensor mounted between the last joint and the hand</td>
-  </tr>
-</table>
+<p align="center">
+  <img src="imgs/franka_with_bota_sensor.png" width="500" alt="Franka with a Bota force-torque sensor" />
+  <br />
+  <b>Franka with Bota sensor</b><br />Sensor mounted between the last joint and the hand
+</p>
 
 - I created a new urdf file in the homonym folder with the sensor located in between the two joints. I called the file `panda_plus_bota.urdf`
 - I also added the mesh in the homonym folder so I can visualize it 
@@ -294,16 +274,11 @@ This will generate an optimized file in `calibrated_urdf` in the subfolder `pand
 # Limitations 
 The proposed method does not work for all the robots! Here is an example of performing the training on the kinova gen3lite robot. They do not have harmonic drives in each joint, hence they have more backlash. This is a problem, since we have uncertainty in the joint angles. Let's look at the bar plot before and after the training on different tool position. 
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="imgs/bar_plot_statistics_kinova.png" width="800" alt="Mean absolute error for different training and test positions of the Kinova Gen3 Lite" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><b>Kinova Gen3 Lite</b><br />Mean absolute error before and after training on different tool positions</td>
-  </tr>
-</table>
+<p align="center">
+  <img src="imgs/bar_plot_statistics_kinova.png" width="800" alt="Mean absolute error for different training and test positions of the Kinova Gen3 Lite" />
+  <br />
+  <b>Kinova Gen3 Lite</b><br />Mean absolute error before and after training on different tool positions
+</p>
 
 We can observe that training on the front brings the error down also on the left and on a position on the right (and higher) position of the tool. However, if we train only on the left, we observe overfitting, making the accuracy on the other position to decrease with respect to the original nominal model. For the kinova it is actually convenient to train on all the tool position. This brings the error down everywhere removing the influence of the noisy joint reading. 
 
