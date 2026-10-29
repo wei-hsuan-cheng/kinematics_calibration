@@ -18,6 +18,7 @@ argument_parser.add_argument("--model", "-m", help="calibrated robot model. Save
 argument_parser.add_argument("--data", "-d", type=str, nargs='+', help="Data that you want to train the calibration on. Stored in data folder.")
 argument_parser.add_argument("--camera-settings", "-c", help="Camera settings file. Default: camera_settings.json in the calibrated model folder", default=None)
 argument_parser.add_argument("--no-generate-images", "-n", help="Pass this flag if you do not want to generate images again but only perform the overlay", action="store_true")
+argument_parser.add_argument("--nominal", help="Render the nominal model urdf/<urdf>.urdf instead of the calibrated model, to compare the two overlays", action="store_true")
 argument_parser.add_argument("--max-images", "-mi", help="Maximum number of images to overlay", default=20, type=int)
 argument_parser.add_argument("--view", "-v", choices=["sockets", "window", "file"], default="sockets", help="sockets: look from behind the two sockets towards the robot. window: choose the view in a visualization window and save it in the camera settings file. file: use the view saved in the camera settings file, without opening a window")
 argument_parser.add_argument("--elevation", "-e", help="Elevation of the camera above the horizontal in degrees, for --view sockets", default=5.0, type=float)
@@ -41,7 +42,11 @@ model_config = yaml.load(open(model_folder+ "/config.yaml", 'r'), Loader=yaml.Fu
 urdf_name = model_config["urdf"]
 end_effector = model_config["end_effector"]
 
-urdf_file = model_folder + "/" + urdf_name + ".urdf"
+if args.nominal:
+    urdf_file = parent_directory + "/urdf/" + urdf_name + ".urdf"
+else:
+    urdf_file = model_folder + "/" + urdf_name + ".urdf"
+prefix = "nominal_" if args.nominal else ""
 
 data_path = [None] * len(data)
 for i, d in enumerate(data):
@@ -78,7 +83,7 @@ if generate_images:
     for keys, joints in data.items():
         print(keys)
 
-        os.makedirs(f"{model_folder}/images/{keys}", exist_ok=True)
+        os.makedirs(f"{model_folder}/images/{prefix}{keys}", exist_ok=True)
 
         images = []
         #read the data in the first key in the dictionary
@@ -148,15 +153,15 @@ if generate_images:
 
 
                 images.append(img_array)
-                with open(f'{model_folder}/images/{keys}/hole_{j}_config_{i}.png', 'wb') as f:
+                with open(f'{model_folder}/images/{prefix}{keys}/hole_{j}_config_{i}.png', 'wb') as f:
                     f.write(img_bin)
         
     
 for keys in [os.path.basename(p) for p in data_path]:
     # Open the input image and read the image data in the folder input_path and append it to the input_image list
     output_image = []
-    input_path = f"{model_folder}/images/{keys}/"
-    output_path = f"{model_folder}/overlay_"+ keys + ".png"
+    input_path = f"{model_folder}/images/{prefix}{keys}/"
+    output_path = f"{model_folder}/overlay_{prefix}{keys}.png"
     all_files = os.listdir(input_path) if os.path.isdir(input_path) else []
     image_files = [f for f in all_files if f.endswith(('.png', '.jpg', '.jpeg'))]
     if not image_files:
