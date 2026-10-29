@@ -220,7 +220,7 @@ We always found the printed tool to be at (almost) perfect distance of 50 mm!
   <b>Printed tool</b><br />Measuring the distance between the sockets with a caliper
 </p>
 
-`Onshape` CAD file of the calibration tool can be accessed [here](https://cad.onshape.com/documents/0b6b115d8701048ec8c03433/w/dadf4b03313f5058948ebaa5/e/40893559aa99a64107618f54?renderMode=0&uiState=67e2e1d063975d2a0e09916f).
+The CAD file of the calibration tool available in the [`stl/MUKCa_tool.stl`](stl/MUKCa_tool.stl), which can also be copied and modified in [`Onshape`](https://cad.onshape.com/documents/0b6b115d8701048ec8c03433/w/dadf4b03313f5058948ebaa5/e/40893559aa99a64107618f54?renderMode=0&uiState=67e2e1d063975d2a0e09916f).
 
 
 ## Try it with your robot and your own urdf! 
