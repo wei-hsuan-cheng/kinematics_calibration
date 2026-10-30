@@ -10,34 +10,37 @@ from sensor_msgs.msg import JointState
 
 
 class TerminalKeys:
-    """Reads single key presses from stdin in a background thread.
+    """Reads single key presses from a terminal stream in a background thread.
 
     Works in a plain terminal (e.g. inside `docker exec`) without an X server.
-    If stdin is a pipe, characters are read as they arrive, which allows scripted runs.
+    The stream defaults to stdin; if stdin is a pipe, characters are read as they arrive,
+    which allows scripted runs. ros2 launch does not pass the terminal to its processes as
+    stdin, so under ros2 launch the stream is the controlling terminal (/dev/tty) instead.
     """
 
-    def __init__(self, on_press):
+    def __init__(self, on_press, stream=None):
         self._on_press = on_press
+        self._stream = stream if stream is not None else sys.stdin
         self._old_settings = None
         self._thread = threading.Thread(target=self._loop, daemon=True)
 
     def start(self):
-        if sys.stdin.isatty():
+        if self._stream.isatty():
             import termios
             import tty
-            self._old_settings = termios.tcgetattr(sys.stdin)
-            tty.setcbreak(sys.stdin.fileno())
+            self._old_settings = termios.tcgetattr(self._stream)
+            tty.setcbreak(self._stream.fileno())
         self._thread.start()
 
     def stop(self):
         if self._old_settings is not None:
             import termios
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self._old_settings)
+            termios.tcsetattr(self._stream, termios.TCSADRAIN, self._old_settings)
             self._old_settings = None
 
     def _loop(self):
         while True:
-            char = sys.stdin.read(1)
+            char = self._stream.read(1)
             if char == '':
                 return
             self._on_press(char)
@@ -96,6 +99,14 @@ class JointStatesRecorder(Node):
             self._keys = PynputKeys(self.on_press)
         elif input_mode == 'terminal':
             self._keys = TerminalKeys(self.on_press)
+        elif input_mode == 'tty':
+            try:
+                tty_stream = open('/dev/tty', 'r')
+            except OSError as error:
+                raise RuntimeError(
+                    "--input tty needs a controlling terminal (/dev/tty); run it from a terminal, "
+                    "e.g. with `docker exec -it`") from error
+            self._keys = TerminalKeys(self.on_press, stream=tty_stream)
 
         self.print_info()
         self.print_status()

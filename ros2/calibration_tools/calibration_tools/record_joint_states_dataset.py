@@ -47,7 +47,7 @@ def main():
     argument_parser.add_argument("--tool-position-on-table", "-t", help="position of the tool on the table", default="unspecified_tool_position")
     argument_parser.add_argument("--joint-names", "-names", help="List of joint names to record (space-separated). If not specified, all joints from the topic will be used.", nargs='+', required=False, default=None)
     argument_parser.add_argument("--data-dir", "-o", help="Root folder of the datasets. Defaults to $MUKCA_DATA_DIR, else the data folder of this repo, else ./data", default=None)
-    argument_parser.add_argument("--input", "-i", help="Keyboard input: 'terminal' reads keys from this terminal, 'pynput' listens globally (needs X)", choices=['terminal', 'pynput'], default='terminal')
+    argument_parser.add_argument("--input", "-i", help="Keyboard input: 'terminal' reads keys from stdin, 'tty' from the controlling terminal (use under ros2 launch), 'pynput' listens globally (needs X)", choices=['terminal', 'tty', 'pynput'], default='terminal')
 
     args = argument_parser.parse_args(remove_ros_args(sys.argv)[1:])
 

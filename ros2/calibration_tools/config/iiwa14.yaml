@@ -1,0 +1,22 @@
+# Recorder settings for: ros2 launch calibration_tools record_joint_states_dataset.launch.py config:=iiwa14
+# Every key can be overridden on the command line, e.g. tool_position_on_table:=left.
+
+# sensor_msgs/msg/JointState topic
+joint_state_topic_name: /joint_states
+# Robot id; the data is saved in <data_dir>/<robot_name>/<tool_position_on_table>/
+robot_name: kuka_1
+# Position of the tool on the table, e.g. front, left, right, high
+tool_position_on_table: front
+# Joints to record, in this order (empty: all joints of the first message)
+joint_names:
+  - iiwa_joint_1
+  - iiwa_joint_2
+  - iiwa_joint_3
+  - iiwa_joint_4
+  - iiwa_joint_5
+  - iiwa_joint_6
+  - iiwa_joint_7
+# Root folder of the datasets (empty: $MUKCA_DATA_DIR, else the data folder of this repo, else ./data)
+data_dir: ""
+# Keyboard input: tty (this terminal, works under ros2 launch) or pynput (global, needs X)
+input: tty

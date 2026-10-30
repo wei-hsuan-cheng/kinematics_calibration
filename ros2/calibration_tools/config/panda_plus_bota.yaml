@@ -1,0 +1,22 @@
+# Recorder settings for: ros2 launch calibration_tools record_joint_states_dataset.launch.py config:=panda_plus_bota
+# Every key can be overridden on the command line, e.g. tool_position_on_table:=left.
+
+# sensor_msgs/msg/JointState topic
+joint_state_topic_name: /joint_states
+# Robot id; the data is saved in <data_dir>/<robot_name>/<tool_position_on_table>/
+robot_name: panda_with_sensor
+# Position of the tool on the table, e.g. front, left, right, high
+tool_position_on_table: front
+# Joints to record, in this order (empty: all joints of the first message)
+joint_names:
+  - panda_joint1
+  - panda_joint2
+  - panda_joint3
+  - panda_joint4
+  - panda_joint5
+  - panda_joint6
+  - panda_joint7
+# Root folder of the datasets (empty: $MUKCA_DATA_DIR, else the data folder of this repo, else ./data)
+data_dir: ""
+# Keyboard input: tty (this terminal, works under ros2 launch) or pynput (global, needs X)
+input: tty

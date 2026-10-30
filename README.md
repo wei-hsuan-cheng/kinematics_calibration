@@ -69,35 +69,32 @@ The tool has two sockets identified as 0 and 1. There is a sphere attached at th
    ```bash
    ros2 topic echo /joint_states --once
    ```
-2. Run the recorder, e.g. for a Franka Panda:
+2. Run the recorder with the settings of a yaml file in [`ros2/calibration_tools/config`](ros2/calibration_tools/config), e.g. for a Franka Panda ([`panda.yaml`](ros2/calibration_tools/config/panda.yaml)):
    ```bash
-   ros2 run calibration_tools record_joint_states_dataset \
-     --joint-state-topic-name /joint_states \
-     --robot-name panda_1 \
-     --tool-position-on-table front \
-     --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
+   ros2 launch calibration_tools record_joint_states_dataset.launch.py config:=panda
    ```
-3. Type the keys in the terminal running the recorder (no Enter needed):
+   Every setting of the yaml can be overridden on the command line, e.g. `tool_position_on_table:=left`.
+3. Type the keys in the terminal running the launch (no Enter needed):
    - Press `a` to add a new joint configuration with the sphere in the socket that is displayed in green.
    - Press `d` to delete the last joint configuration from the list.
    - Press `s` when you switch the socket in which you are recording.
    - Press `i` to show the help.
    - Press `q` when you have finished recording, to save the data and quit.
-4. Optionally, place the tool in other parts of the workspace and record again with the same `--robot-name` and a different `--tool-position-on-table`, e.g. `left`, `right`, `high`.
+4. Optionally, place the tool in other parts of the workspace and record again with the same `robot_name` and a different `tool_position_on_table`, e.g. `tool_position_on_table:=left`, `right`, `high`.
 
 The data is saved in `data/<robot-name>/<tool-position-on-table>/hole_0.csv` and `hole_1.csv`, with the joint names as a `#` header. If the folder already contains recordings, the new data points are appended.
 
-- `--robot-name`: use the name of the robot and a number, in case you want to calibrate more than one robot of the same type. All datasets of one robot must use the same robot name, since the evaluation scripts look for the test data in `data/<robot-name>`.
-- `--tool-position-on-table`: only a label to distinguish the datasets; the pose of the tool is never used. Use a new name every time the tool is moved, since all the data in one folder must share the same two socket locations.
-- `--joint-names`: the joints to record, in this order. If omitted, all joints of the first message are recorded. Messages that do not contain all the joints are ignored.
+- `robot_name`: use the name of the robot and a number, in case you want to calibrate more than one robot of the same type. All datasets of one robot must use the same robot name, since the evaluation scripts look for the test data in `data/<robot-name>`.
+- `tool_position_on_table`: only a label to distinguish the datasets; the pose of the tool is never used. Use a new name every time the tool is moved, since all the data in one folder must share the same two socket locations.
+- `joint_names`: the joints to record, in this order. If empty, all joints of the first message are recorded. Messages that do not contain all the joints are ignored.
 
-| Robot | `--model` | `--joint-names` |
-|---|---|---|
-| Franka Panda / FR3 | `panda` | `panda_joint1` ... `panda_joint7` |
-| KUKA iiwa14 | `iiwa14` | `iiwa_joint_1` ... `iiwa_joint_7` |
-| Kinova Gen3 Lite | `gen3lite` | `joint_1` ... `joint_6` |
+| Robot | `config:=` | `--model` | `joint_names` |
+|---|---|---|---|
+| Franka Panda / FR3 | `panda` | `panda` | `panda_joint1` ... `panda_joint7` |
+| KUKA iiwa14 | `iiwa14` | `iiwa14` | `iiwa_joint_1` ... `iiwa_joint_7` |
+| Kinova Gen3 Lite | `gen3lite` | `gen3lite` | `joint_1` ... `joint_6` |
 
-See [`ros2/calibration_tools/README.md`](ros2/calibration_tools/README.md) for all options, e.g. `--data-dir` to save the data somewhere else.
+For another robot, copy one of these yaml files, set its joints and pass its path: `config:=/path/to/my_arm.yaml`. See [`ros2/calibration_tools/README.md`](ros2/calibration_tools/README.md) for all settings, e.g. `data_dir` to save the data somewhere else.
 
 
 ## Calibrate the urdf model
@@ -281,9 +278,9 @@ This is an example we have in the lab in TU Delft with the bota sensor.
   - `panda_joint7`
   - `bota_sensor_joint`
   - `ball_joint`
-- Record the data. As far as you have a `joint_states` topic, you can run the command described at the beginning of these instructions. For example: 
+- Record the data. As far as you have a `joint_states` topic, you can run the command described at the beginning of these instructions, with [`panda_plus_bota.yaml`](ros2/calibration_tools/config/panda_plus_bota.yaml) (robot name `panda_with_sensor`, tool position `front`):
 ```bash
-ros2 run calibration_tools record_joint_states_dataset --joint-state-topic-name /joint_states --robot-name panda_with_sensor --tool-position-on-table front --joint-names panda_joint1 panda_joint2 panda_joint3 panda_joint4 panda_joint5 panda_joint6 panda_joint7
+ros2 launch calibration_tools record_joint_states_dataset.launch.py config:=panda_plus_bota
 ```
 This will save the data in the directory `data` with the name `panda_with_sensor/front`. Nice. 
 
