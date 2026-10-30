@@ -97,6 +97,14 @@ The data is saved in `data/<robot-name>/<tool-position-on-table>/hole_0.csv` and
 For another robot, copy one of these yaml files, set its joints and pass its path: `config:=/path/to/my_arm.yaml`. See [`ros2/calibration_tools/README.md`](ros2/calibration_tools/README.md) for all settings, e.g. `data_dir` to save the data somewhere else.
 
 
+### Quick test without a robot
+Publish fake Panda joint states in one terminal:
+```bash
+ros2 topic pub -r 20 /joint_states sensor_msgs/msg/JointState \
+  "{name: [panda_joint1, panda_joint2, panda_joint3, panda_joint4, panda_joint5, panda_joint6, panda_joint7], position: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]}"
+```
+
+
 ## Calibrate the urdf model
 Activate the virtual environment and go to the `scripts` folder:
 ```bash
