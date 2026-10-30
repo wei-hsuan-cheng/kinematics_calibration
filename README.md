@@ -225,6 +225,14 @@ The CAD file of the calibration tool available in the [`stl/MUKCa_tool.stl`](stl
 
 ## Try it with your robot and your own urdf! 
 
+### (Optional) Export the urdf from xacro
+The calibration reads a plain urdf from `urdf/<arm_name>.urdf`. Set the description package, the `.urdf.xacro` path, its xacro arguments and the arm name at the top of [`export_urdf.launch.py`](ros2/calibration_tools/launch/export_urdf.launch.py), then:
+```bash
+ros2 launch calibration_tools export_urdf.launch.py
+# -> urdf/<arm_name>.urdf, then use --model <arm_name>
+```
+See [`ros2/calibration_tools`](ros2/calibration_tools/README.md#export-a-urdf-from-xacro-optional) for details. Then add the sphere and the `config_optimizer` file as below.
+
 ### Add the sphere to the urdf
 Add a link at the center of the sphere, fixed to the link that holds it (e.g. the flange). As in [`urdf/panda.urdf`](urdf/panda.urdf):
 ```xml

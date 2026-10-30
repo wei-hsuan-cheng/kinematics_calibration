@@ -3,7 +3,7 @@
 <package format="3">
   <name>calibration_tools</name>
   <version>0.0.0</version>
-  <description>Joint state recorder for the MUKCa kinematic calibration</description>
+  <description>Joint state recorder for the MUKCa kinematic calibration, and an optional urdf.xacro to urdf exporter</description>
 
   <maintainer email="franzesegiovanni@outlook.com">gfranzese</maintainer>
 
@@ -12,6 +12,10 @@
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
+  <!-- export_urdf.launch.py; the description package comes from the sourced workspace -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
   <test_depend>python3-pytest</test_depend>
 
