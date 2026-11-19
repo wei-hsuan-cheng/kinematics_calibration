@@ -7,6 +7,8 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description='Create plots for the calibration data')
     parser.add_argument('--model', "-m", type=str, help='Calibrated robot model. Saved in the calibrated_urdf folder.')
+    parser.add_argument('--test', '-t', type=str, nargs='+', default=None,
+                        help='Test data folders in data (e.g. <your_arm>/val/front_vertical). Default: the other folders in data/<model>.')
     parser.add_argument('--latex', "-l", action='store_true', help='Use latex for saving of the plots as .pgf. If not they are saved as png.')
     args = parser.parse_args()
 
@@ -34,8 +36,11 @@ def main():
     offset_distance = model_config["offset_distance"]
     training_data = model_config["data_path"]
     data_folder = os.path.abspath(parent_directory + "/data/" + model)
-    folders = [f.path for f in os.scandir(data_folder) if f.is_dir()]
-    evaluation_data = [folder for folder in folders if folder not in training_data]
+    if args.test:
+        evaluation_data = [os.path.abspath(os.path.join(parent_directory, 'data', t)) for t in args.test]
+    else:
+        folders = [f.path for f in os.scandir(data_folder) if f.is_dir()]
+        evaluation_data = [folder for folder in folders if folder not in training_data]
 
     print(f"Model folder: {model_folder}")
     print(f"Training data: {training_data}")

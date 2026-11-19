@@ -229,6 +229,7 @@ The CAD file of the calibration tool available in the [`stl/MUKCa_tool.stl`](stl
 
 
 ## Try it with your robot and your own urdf! 
+Full walkthrough (record, several tool positions, train / val split, plots): [`calibrate_your_arm.md`](calibrate_your_arm.md).
 
 ### (Optional) Export the urdf from xacro
 The calibration reads a plain urdf from `urdf/<arm_name>.urdf`. Set the description package, the `.urdf.xacro` path, its xacro arguments and the arm name at the top of [`export_urdf.launch.py`](ros2/calibration_tools/launch/export_urdf.launch.py), then:

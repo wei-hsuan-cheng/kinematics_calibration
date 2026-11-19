@@ -18,6 +18,8 @@ def main():
     argument_parser.add_argument("--root-link", "-rl", help="Root link", default="base_link")
     argument_parser.add_argument("--variance_noise", "-v", help="Variance of the noise injected to the initial robot parameters", default=0.00)
     argument_parser.add_argument("--number-samples", "-n", help="Number of samples to use", default=None)
+    argument_parser.add_argument("--output", "-o", default=None,
+                                 help="Output folder in calibrated_urdf (e.g. <your_arm>/holdout_front_tilted). Default: the parent folder of the first --data.")
 
     args = argument_parser.parse_args()
     model = args.model
@@ -40,7 +42,7 @@ def main():
     parent_directory = os.path.join(os.path.dirname(script_directory), os.path.pardir)
     
     
-    output_path = os.path.abspath(os.path.join(parent_directory, 'calibrated_urdf', robot_name))
+    output_path = os.path.abspath(os.path.join(parent_directory, 'calibrated_urdf', args.output or robot_name))
 
     # data_path = os.path.abspath(os.path.join(parent_directory, 'data', data))
     urdf_path = os.path.abspath(os.path.join(parent_directory, 'urdf', model + ".urdf"))
