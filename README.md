@@ -152,6 +152,13 @@ In this plot we trained and evaluated on different positions of the tool or in a
 python3 generate_learning_curve.py --model panda_1
 ```
 This plots the consistency and the distortion of the model both on the training set and on any other dataset in the folder `data/panda_1`, and saves them in `calibrated_urdf/panda_1`.
+
+<p align="center">
+  <img src="imgs/schematics/socket_metrics_schematic.png" width="700" alt="Consistency and distortion metrics" />
+  <br />
+  <b>Consistency and distortion</b><br />FK-predicted sphere centres scattered around each socket centre &mu;<sub>0</sub>, &mu;<sub>1</sub> (their mean). Consistency &sigma;<sub>0</sub>, &sigma;<sub>1</sub>: spread around the centre. Distortion &epsilon;: the centres are d + &epsilon; apart instead of d = 50 mm.
+</p>
+
 For example:
 <table align="center">
   <tr>
