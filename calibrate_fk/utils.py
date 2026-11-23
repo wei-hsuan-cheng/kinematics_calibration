@@ -463,6 +463,42 @@ def compute_improved_performance(model_folder: str, data_folders_train: List[str
             print(f" & {socket1[0]:.3f} {socket1[1]:.3f} {socket1[2]:.3f} & {socket2[0]:.3f} {socket2[1]:.3f} {socket2[2]:.3f} \ \ Distance: {np.linalg.norm(np.array(socket1) - np.array(socket2)):.3f} ")
     else:
         print("No test data provided")
+def _plot_learning_curve(model_folder: str, steps: List[int], curves_train: Dict[str, list], curves_test: Dict[str, list],
+                         title: str, ylabel: str, ylim: Tuple[float, float], file_name: str) -> None:
+    """One color per tool position (dataset folder name): train solid, test dotted, so each train/test pair shares a color."""
+    from matplotlib.lines import Line2D
+    from calibrate_fk.plot_style import setup_style, position_colors, MUTED, DPI
+    setup_style()
+    positions = list(curves_train) + [name for name in curves_test if name not in curves_train]
+    colors = position_colors(positions)
+
+    fig, ax = plt.subplots(1, 1, figsize=(7.5, 3.8))
+    ax.set_yscale("log")
+    for name, values in curves_train.items():
+        ax.plot(steps, values, color=colors[name], linestyle='-', linewidth=2)
+    for name, values in curves_test.items():
+        ax.plot(steps, values, color=colors[name], linestyle=':', linewidth=2)
+
+    # legend: one entry per tool position (color), then the line styles
+    handles = [Line2D([], [], color=colors[name], linewidth=2, label=name) for name in positions]
+    if curves_train:
+        handles.append(Line2D([], [], color=MUTED, linestyle='-', linewidth=2, label="train"))
+    if curves_test:
+        handles.append(Line2D([], [], color=MUTED, linestyle=':', linewidth=2, label="test"))
+    ax.legend(handles=handles, loc='center left', bbox_to_anchor=(1.02, 0.5), title="tool position",
+              title_fontproperties={"weight": "bold", "size": 9}, alignment="left")
+
+    ax.set_title(title, loc='left')
+    ax.set_xlabel("step")
+    ax.set_ylabel(ylabel, fontsize=13)
+    ax.xaxis.set_major_locator(plt.MultipleLocator(1))
+    ax.set_xlim(left=0, right=steps[-1])
+    ax.set_ylim(*ylim)
+    fig.savefig(f"{model_folder}/{file_name}", dpi=DPI, bbox_inches='tight')
+    plt.close(fig)
+
+
+
 def plot_training_curves(model_folder: str, data_folders_train: str, data_folders_test: List[str], offset_distance, repeatability : float, latex=False) -> None:
     if latex == True:
         plt.rcParams.update({
@@ -474,117 +510,33 @@ def plot_training_curves(model_folder: str, data_folders_train: str, data_folder
     kpis = yaml.load(open(f"{model_folder}/kpis.yaml"), Loader=yaml.FullLoader)
     nb_steps = kpis["nb_steps"]
     steps = list(range(nb_steps+1))
-    distances_train = [[] for _ in data_folders_train]
-    distances_test = [[] for _ in data_folders_test]
-    variances_train = [[] for _ in data_folders_train]
-    variances_test = [[] for _ in data_folders_test]
+    # keyed by tool position (dataset folder name), so train/<position> and val/<position> pair up
+    distances_train, variances_train = {}, {}
+    distances_test, variances_test = {}, {}
     print(f"Offset distance: {offset_distance}")
 
     for step in steps:
-        # print(f"Step {step}")
         model_step = URDF.load(f"{model_folder}/step_{step}/model.urdf")
-        statistics = evaluate_model(model_step, data_folders_train, offset_distance=offset_distance)
-        for i, (key, value) in enumerate(statistics.items()):
-            distance_error = value["distance_error"]
-            std_dev = value["std_dev_fk"]
-            distances_train[i].append(distance_error)
-            variances_train[i].append(std_dev)
-        key_training = list(statistics.keys())
+        for data_folders, distances, variances in ((data_folders_train, distances_train, variances_train),
+                                                   (data_folders_test, distances_test, variances_test)):
+            if not data_folders:
+                continue
+            statistics = evaluate_model(model_step, data_folders, offset_distance=offset_distance)
+            for name, value in statistics.items():
+                distances.setdefault(name, []).append(value["distance_error"])
+                variances.setdefault(name, []).append(value["std_dev_fk"])
 
-        statistics = evaluate_model(model_step, data_folders_test, offset_distance=offset_distance)
-        for i, (key, value) in enumerate(statistics.items()):
-            distance_error = value["distance_error"]
-            std_dev = value["std_dev_fk"]
-            distances_test[i].append(distance_error)
-            variances_test[i].append(std_dev)
-        key_test = list(statistics.keys())
-    fontsize=20
-    # CONSISTENCY
-    fig, ax = plt.subplots(1, 1)
-
-    ax.set_yscale("log")
-    for i, variances in enumerate(variances_train):
-        if i == 0:
-            ax.plot(steps, variances, color= 'blue', linewidth=3, label="train")
-        else:
-            ax.plot(steps, variances, color= 'blue', linewidth=3)
-    for i, variances in enumerate(variances_test):
-        if i == 0:
-            ax.plot(steps, variances, color= 'orange', linewidth=3, label="test")
-        else:
-            ax.plot(steps, variances, color= 'orange', linewidth=3)
-
-    ax.legend(fontsize=fontsize)
-    ax.set_xlabel("Step", fontsize=fontsize)
-    ax.set_ylabel("$\sigma$ [m]", fontsize=fontsize)
-    ax.axhline(y=repeatability, color='k', linestyle='--', linewidth=3)
-
-    ax.tick_params(axis='both', which='major', labelsize=fontsize)
-    ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
-    ax.xaxis.set_major_locator(plt.MultipleLocator(1))
-    ax.set_xlim(left=0)
-    ax.set_ylim(1e-4/2, 3e-2)
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-
-    plt.tight_layout()
-    # if latex:
-    #     plt.savefig(f"{model_folder}/consistency.pgf")
-    # else:
-    plt.savefig(f"{model_folder}/consistency.png")
-
-
-
-    # DISTORTION
-    fig, ax = plt.subplots(1, 1)
-    # make log scale
-    ax.set_yscale("log")
-    for i, distances in enumerate(distances_train):
-        if i == 0:
-            ax.plot(steps, distances, color='blue', linewidth=3, label="train")
-        else:
-            ax.plot(steps, distances, color='blue', linewidth=3)
-    for i, distances in enumerate(distances_test):
-        name = data_folders_test[i].split("/")[-1]
-
-        if i == 0:
-            ax.plot(steps, distances, color='orange', linewidth=3, label="test")
-        else:
-            ax.plot(steps, distances, color='orange', linewidth=3)
-    #plot dashed horixzaon line at the repeatibility value
     print(f"Repeatability: {repeatability}")
-    ax.axhline(y=repeatability, color='k', linestyle='--', linewidth=3)
-    # set legend
-    ax.legend(fontsize=fontsize)
-    ax.set_xlabel("Step", fontsize=fontsize)
-    ax.set_ylabel("$\epsilon$ [m]", fontsize=fontsize)
-    ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
-    # only show the step at every 5th
-    ax.xaxis.set_major_locator(plt.MultipleLocator(1))
-    ax.set_xlim(left=0)
-
-    ax.set_ylim(1e-7, 1e-2)
-    # ax.set_ylim(1e-4/2, 3e-2)
-
-    # set fontsize of the x and y numbers
-    ax.tick_params(axis='both', which='major', labelsize=fontsize)
-    # set title
-
-    # the figure should have tight margins but the legend should not be cut off
-    # make size of figure suitable for journal paper IEEE standard
-    # fig.set_size_inches(3.487/2, 1.5)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    plt.tight_layout()
-    # if latex:
-    #     plt.savefig(f"{model_folder}/distortion.pgf")
-    # else:
-    plt.savefig(f"{model_folder}/distortion.png")
-
+    # CONSISTENCY
+    _plot_learning_curve(model_folder, steps, variances_train, variances_test,
+                         r"Consistency $\sigma$ (RMS distance to the socket centre)", r"$\sigma$ [m]",
+                         (1e-4/2, 3e-2), "consistency.png")
+    # DISTORTION
+    _plot_learning_curve(model_folder, steps, distances_train, distances_test,
+                         r"Distortion $\epsilon$ (socket distance error)", r"$\epsilon$ [m]",
+                         (1e-7, 1e-2), "distortion.png")
 
     plt.show()
-
 
 
 def modify_urdf(urdf_file: str, search_pattern: str, replace_with: str, output_file: str):
