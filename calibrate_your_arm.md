@@ -78,7 +78,9 @@ python3 compute_improved_performance.py --model $R/train --test $V
 python3 plot_mae_sigma.py --model $R/train              # -> mae_vs_sigma_<position>_train.png
 python3 plot_mae_sigma.py --model $R/train --data $V    # -> mae_vs_sigma_<position>_val.png
 ```
-Result: `calibrated_urdf/<your_arm>/train/<your_arm>.urdf` (output folder = parent of the first `--data`).
+Result: `calibrated_urdf/<your_arm>/train/<your_arm>.urdf` (output folder = parent of the first `--data`). In the same folder, `urdf_delta_params.yaml` lists the change of each joint against `urdf/<your_arm>.urdf`. For an older result: `python3 compute_delta_params.py --model $R/train`.
+- `dxyz_m`, `drpy_rad`: for config. Calibrated origin = nominal xyz + `dxyz_m`, nominal rpy + `drpy_rad`, e.g. to apply the calibration on top of your nominal xacro.
+- `dxyz_mm`, `drpy_deg`: the same in mm / deg, to read. `rot_deg`: the rotation in the joint frame (axis tilt rx, ry and zero offset rz), to read; better than `drpy_deg` near pitch ±90°, where roll and yaw trade off.
 
 `plot_mae_sigma.py` → `mae_vs_sigma_<position>_<set>.png`, nominal vs calibrated:
 - like the README scheme, one row per model (nominal, calibrated).

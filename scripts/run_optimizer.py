@@ -6,6 +6,7 @@ import sys
 
 from calibrate_fk.parameter_optimizer import ParameterOptimizer
 from calibrate_fk.utils import check_urdf_path, check_data_path, remove_outliers
+from compute_delta_params import write_delta_params, markdown_table
 
 def main():
 
@@ -97,6 +98,10 @@ def main():
     optimizer.evaluate_fks(verbose=True)
     optimizer.optimize(use_dynamic_means=True, use_distortion_error=True, use_regularization=True, saving_steps=saving_steps)
     optimizer.evaluate_fks(verbose=True)
+
+    delta_file, deltas = write_delta_params(output_path, urdf_path, parameters['joints'])
+    print(markdown_table(deltas))
+    print(f"Delta parameters: {delta_file}")
 
 
 if __name__ == "__main__":
